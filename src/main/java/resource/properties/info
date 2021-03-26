@@ -1,0 +1,9 @@
+# 데이터베이스 접속 정보
+# db정보를 변경할 때, 여기서 통일적으로 변경하면 된다.
+driver=oracle.jdbc.driver.OracleDriver
+dburl=jdbc:oracle:thin:@localhost:1521:xe
+user=scott
+pass=tiger
+test=scott
+# driver dburl user pass pass test
+# 파일 서버 정보

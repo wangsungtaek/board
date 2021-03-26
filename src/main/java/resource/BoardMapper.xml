@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="board.a03_dao.A01_BoardDao">
+	
+	<resultMap type="board" id="boardMap"/>
+	<select id="boardList" resultMap="boardMap" parameterType="board">
+		SELECT * FROM BOARD
+		WHERE subject like '%'||#{subject}||'%'
+		AND writer like '%'||#{writer}||'%'
+		ORDER BY no DESC
+	</select>
+	
+	<insert id="insertBoard" parameterType="board">
+		INSERT INTO board
+		VALUES(board_seq.nextval, #{refno},
+			#{subject}, #{content}, #{writer}, 0, sysdate, sysdate)
+	</insert>
+	
+</mapper>
