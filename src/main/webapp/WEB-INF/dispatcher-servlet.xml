@@ -58,4 +58,9 @@
 	<bean id="pageJsonReport" class="org.springframework.web.servlet.view.json.MappingJackson2JsonView">
 		<property name="contentType" value="text/html;charset=utf-8"/>
 	</bean>
+	
+	<!-- 2. 파일업로드뷰 viewer -->
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"/>
+	<!-- 3. 파일 다운로드 뷰 viewer -->
+	<bean id="downloadviewer" class="board.z02_util.FileDownloadViewer"/>
 </beans>

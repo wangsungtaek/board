@@ -25,7 +25,15 @@
 		$('#regBtn').click(function(){
 			location.href="${path}/board.do?method=insForm";
 		})
+		$(".data").dblclick(function(){
+			//var no = $(this).children().eq(0).text();
+			var no = $(this).attr("id");
+			console.log(no);
+			// board/board.do?method=detail
+			location.href="${path}/board.do?method=detail&no="+no;
+		});
 	});
+	
 </script>
 </head>
 <div class="jumbotron text-center">
@@ -61,7 +69,7 @@
 	</thead>
 	<tbody>
 		<c:forEach var="bd" items="${boardList}">
-		<tr class="text-center">
+		<tr class="text-center data" id="${bd.no}">
 			<td>${bd.no}</td>
 			<td>${bd.subject}</td>
 			<td>${bd.writer}</td>

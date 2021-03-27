@@ -18,4 +18,26 @@
 			#{subject}, #{content}, #{writer}, 0, sysdate, sysdate)
 	</insert>
 	
+	<insert id="uploadFile" parameterType="boardfile">
+		INSERT INTO boardfile
+		VALUES(board_seq.currval, #{fname},
+		#{pathname}, #{content}, sysdate)
+	</insert>
+	
+	<select id="getBoard" resultType="board" parameterType="int">
+		SELECT * FROM board WHERE no=#{no}	
+	</select>
+	
+	<resultMap type="boardfile" id="boardMap2"/>
+	<select id="fileInfo" resultMap="boardMap2" parameterType="int">
+		SELECT * FROM boardfile
+		where no = #{no}
+	</select>
+	
+	<update id="uptReadCnt" parameterType="int">
+		UPDATE board
+		   SET readcnt = readcnt+1
+		WHERE no = #{no}
+	</update>
+	
 </mapper>

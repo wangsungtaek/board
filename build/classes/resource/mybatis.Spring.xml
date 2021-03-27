@@ -5,6 +5,7 @@
 	
 	<typeAliases>
 		<typeAlias alias="board" type="board.z01_vo.Board"/>
+		<typeAlias alias="boardfile" type="board.z01_vo.BoardFile"/>
 	</typeAliases>
 	
 	<mappers>

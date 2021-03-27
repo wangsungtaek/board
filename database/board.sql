@@ -19,3 +19,20 @@ INSERT INTO board VALUES(board_seq.nextval, 0, '첫번째 글', '내용',
 
 SELECT * FROM board;
 
+CREATE TABLE boardfile(
+	NO NUMBER PRIMARY KEY,
+	fname VARCHAR2(200),
+	pathname VARCHAR2(500),
+	content VARCHAR2(2000),
+	credte DATE
+);
+ALTER TABLE boardfile DROP PRIMARY KEY;
+SELECT * FROM boardfile;
+
+-- content, fname
+CREATE TABLE fileexp(
+	content varchar2(200),
+	fname varchar2(100)
+);
+SELECT * FROM fileexp;
+SELECT * FROM boardfile;
