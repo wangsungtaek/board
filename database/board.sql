@@ -36,3 +36,13 @@ CREATE TABLE fileexp(
 );
 SELECT * FROM fileexp;
 SELECT * FROM boardfile;
+SELECT * FROM board;
+
+SELECT * FROM (
+	SELECT rownum rn, LEVEL, a.*
+	  FROM board a
+	START WITH refno = 0
+	CONNECT BY PRIOR NO = refno
+	ORDER siblings BY NO DESC
+)
+WHERE rn BETWEEN 1 AND 5;

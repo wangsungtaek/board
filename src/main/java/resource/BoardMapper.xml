@@ -4,12 +4,26 @@
 	"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="board.a03_dao.A01_BoardDao">
 	
-	<resultMap type="board" id="boardMap"/>
-	<select id="boardList" resultMap="boardMap" parameterType="board">
-		SELECT * FROM BOARD
+	<select id="totCnt" resultType="int" parameterType="boardsch">
+		SELECT count(*)
+		FROM board
 		WHERE subject like '%'||#{subject}||'%'
-		AND writer like '%'||#{writer}||'%'
-		ORDER BY no DESC
+		AND writer like '%'||#{writer}||'%'		
+	</select>
+	
+	<resultMap type="board" id="boardMap"/>
+	<select id="boardList" resultMap="boardMap" parameterType="boardsch">
+		SELECT *
+		FROM(
+			SELECT rownum rn, level, a. *
+			FROM board a
+			WHERE subject like '%'||#{subject}||'%'
+			AND writer like '%'||#{writer}||'%'
+			START WITH refno = 0
+			CONNECT BY PRIOR NO = refno
+			ORDER siblings by no desc
+		)
+		WHERE rn BETWEEN #{start} AND #{end}
 	</select>
 	
 	<insert id="insertBoard" parameterType="board">
@@ -39,5 +53,28 @@
 		   SET readcnt = readcnt+1
 		WHERE no = #{no}
 	</update>
+	
+	<update id="updateBoard" parameterType="board">
+		UPDATE board
+		   SET subject = #{subject},
+				content = #{content},
+				uptdte = sysdate
+		WHERE no = #{no}
+	</update>
+	
+    <update id="updateFile" parameterType="hashmap">
+          update boardfile
+            set fname = #{fname}
+         where no = #{no}
+              and fname = #{orgFname}
+    </update>
+	
+	<delete id="deleteBoard" parameterType="int">
+		DELETE FROM board where no=#{no}
+	</delete>
+	
+	<delete id="deleteFile" parameterType="int">
+		DELETE FROM boardfile where no=#{no}
+	</delete>
 	
 </mapper>

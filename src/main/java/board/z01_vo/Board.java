@@ -6,6 +6,7 @@ import java.util.Date;
 import org.springframework.web.multipart.MultipartFile;
 
 public class Board {
+	private int level;
 	private int no;
 	private int refno;
 	private String subject;
@@ -14,8 +15,9 @@ public class Board {
 	private int readcnt;
 	private Date regdte;
 	private Date uptdte;
-	private MultipartFile[] report;
-	private ArrayList<BoardFile> fileInfo;
+	private MultipartFile[] report; // 업로드시 필요
+	private String[] fnames; // 파일 수정시 사용.
+	private ArrayList<BoardFile> fileInfo;// 다운로드시 필요
 	
 	public Board() {
 		// TODO Auto-generated constructor stub
@@ -105,6 +107,22 @@ public class Board {
 
 	public void setFileInfo(ArrayList<BoardFile> fileInfo) {
 		this.fileInfo = fileInfo;
+	}
+
+	public String[] getFnames() {
+		return fnames;
+	}
+
+	public void setFnames(String[] fnames) {
+		this.fnames = fnames;
+	}
+
+	public int getLevel() {
+		return level;
+	}
+
+	public void setLevel(int level) {
+		this.level = level;
 	}
 	
 }

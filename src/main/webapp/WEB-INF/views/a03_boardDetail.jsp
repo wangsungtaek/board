@@ -35,9 +35,26 @@
 --%>
 //
 	$(document).ready(function(){
+		var memId = "${mem.id}";
+		
 		$("#goMain").on("click",function(){
     		location.href="${path}/board.do?method=list";
  		});
+		$("#reBtn").click(function(){
+			if(confirm("답글을 달겠습니까?")){
+				// 답글 처리를 위한 데이터 처리
+				$('[name=refno]').val($('[name=no]').val());
+				$('[name=subject]').val("RE:"+$("[name=subject]").val());
+				$('[name=content]').val(
+					"\n\n\n\n\n\n\n\n"+
+					"====== 이전 글 =====\n"+
+					$("[name=content]").val());
+				$('form').attr("action",
+						"${path}/board.do?method=insForm");
+				$("form").submit();
+			}
+		})
+		
 		
 		$("[name=fnames]").click(function(){
 			var fname = $(this).val();
@@ -45,6 +62,44 @@
 				location.href="${path}/board.do?method=download&fname="+fname;
 			}
 		});
+		$("#uptBtn").click(function(){
+			var writer=$("[name=writer]").val();
+			if(memId == writer){
+				if(confirm("수정하시겠습니까?")){
+					$('[name=proc]').val("upt");
+					$('form').attr("action",
+							"${path}/board.do?method=update");
+					$('form').submit();
+				}
+			} else {
+				alert("수정권한이 없습니다. \n 작성자만 수정이 가능합니다!");
+			}
+		})
+		$(".custom-file-input").on("change", function(){
+			$(this).next(".custom-file-label").text($(this).val());
+		})
+		$("#delBtn").click(function(){
+			var writer=$("[name=writer]").val();
+			if(memId == writer){
+				if(confirm("삭제하시겠습니까?")){
+					$('[name=proc]').val("del");
+					$('form').attr("action",
+							"${path}/board.do?method=delete");
+					$('form').submit();
+				}
+			} else {
+				alert("삭제권한이 없습니다. \n 작성자만 삭제가 가능합니다!");
+			}
+		})
+		var proc = "${param.proc}";
+		if(proc=="upt"){
+			if(confirm("수정되었습니다.\n 조회화면으로 이동하시겠습니까?")){
+				$(location).attr("href","${path}/board.do?method=list");
+			}
+		} else if(proc=="del"){
+			alert("삭제 되었습니다.")
+			$(location).attr("href","${path}/board.do?method=list");
+		}
 	});
 </script>
 </head>
@@ -59,7 +114,7 @@
 				<div class="input-group-prepend">
 					<span class="input-group-text">글번호</span>
 				</div>
-				<input class="form-control" name="no" value="${board.no }" readonly>
+				<input class="form-control" name="no" value="${board.no}" readonly>
 				<div class="input-group-prepend">
 					<span class="input-group-text">상위글번호</span>
 				</div>
@@ -126,11 +181,11 @@
 					</div>
 					<!-- 다운로드할 파일 정보 -->
 					<input class="form-control fileInfo" name="fnames"
-						value="${finf.fname}" />
+						value="${finf.fname}" readonly />
 					<div class="custom-file">
 						<!--변경할  파일정보(report ==> vo 의 property) -->
 						<input type="file" name="report" class="custom-file-input"
-							id="file01" readonly />
+							id="file01"/>
 						<label class="custom-file-label" for="file01">
 						 변경하려면 파일을 선택하세요!</label>
 					</div>

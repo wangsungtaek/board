@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import board.a02_service.A01_BoardService;
 import board.z01_vo.Board;
+import board.z01_vo.BoardSch;
 import board.z01_vo.Member;
 
 @Controller
@@ -23,7 +24,7 @@ public class A01_BoardController {
 	
 	// http://localhost:7080/board/board.do?method=list
 	@RequestMapping(params = "method=list")
-	public String boardList(@ModelAttribute("sch") Board sch,
+	public String boardList(@ModelAttribute("sch") BoardSch sch,
 			Model m, HttpServletRequest request) {
 		// 세션 설정.
 		HttpSession session = request.getSession();
@@ -34,14 +35,16 @@ public class A01_BoardController {
 	}
 	// http://localhost:7080/board/board.do?method=insForm
 	@RequestMapping(params = "method=insForm")
-	public String insForm() {
+	public String insForm(@ModelAttribute("board") Board d) {
 		return "a02_boardInsert";
 	}
 	// http://localhost:7080/board/board.do?method=insert
 	@RequestMapping(params = "method=insert")
-	public String boardInsert(Board insert) {
+	public String boardInsert(Board insert, Model d) {
 		System.out.println("파일:"+insert.getReport()[0].getOriginalFilename());
 		service.insertBoard(insert);
+		
+		d.addAttribute("proc", "insert");
 		return "a02_boardInsert";
 	}
 	
@@ -62,8 +65,18 @@ public class A01_BoardController {
 		// 컨테이너 안에 있는 viewer명.
 		return "downloadviewer";
 	}
+	
 	// http://localhost:7080/board/board.do?method=update
+	@RequestMapping(params = "method=update")
+	public String updateBoard(Board board) {
+		service.updateBoard(board);
+		return "forward:/board.do?method=detail";
+		// 수정 후, 다시 조회할 수 있게 하기 위하여 forward로 해당 controller호출..
+	}
 	// http://localhost:7080/board/board.do?method=delete
-
-
+	@RequestMapping(params = "method=delete")
+	public String deleteBoard(@RequestParam("no") int no) {
+		service.deleteBoard(no);
+		return "a03_boardDetail";
+	}
 }
