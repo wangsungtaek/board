@@ -49,12 +49,13 @@
 					"\n\n\n\n\n\n\n\n"+
 					"====== 이전 글 =====\n"+
 					$("[name=content]").val());
+				
+				
 				$('form').attr("action",
 						"${path}/board.do?method=insForm");
 				$("form").submit();
 			}
 		})
-		
 		
 		$("[name=fnames]").click(function(){
 			var fname = $(this).val();
@@ -159,9 +160,9 @@
 					value="<fmt:formatDate type='both' pattern='yyyy/MM/dd HH:mm:ss' value='${board.uptdte }'/>"
 					readonly>
 			</div>
-			<%--
-   <input class="form-control" type="text" 
-          name="regdte" value="<fmt:formatDate type='both' pattern='yyyy/MM/dd HH:mm:ss' value='${board.regdte}'/>" readonly>
+<%--
+	<input class="form-control" type="text" 
+		name="regdte" value="<fmt:formatDate type='both' pattern='yyyy/MM/dd HH:mm:ss' value='${board.regdte}'/>" readonly>
         
  --%>
 			<div class="input-group mb-3">

@@ -1,5 +1,8 @@
 package board.a01_controller;
 
+import java.util.Arrays;
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -22,6 +25,11 @@ public class A01_BoardController {
 	@Autowired(required = false)
 	A01_BoardService service;
 	
+	@ModelAttribute("pageOp")
+	public List<String> tools(){
+		return Arrays.asList("3","5","10","20","30");
+	}
+	
 	// http://localhost:7080/board/board.do?method=list
 	@RequestMapping(params = "method=list")
 	public String boardList(@ModelAttribute("sch") BoardSch sch,
@@ -38,6 +46,11 @@ public class A01_BoardController {
 	public String insForm(@ModelAttribute("board") Board d) {
 		return "a02_boardInsert";
 	}
+	// 초기에 @ModelAttribute에 객체가 데이터를 받지 못할 때,
+	// 객체형태는 null "" 숫자형태는 0으로 default값이 설정된다.
+	
+	
+	
 	// http://localhost:7080/board/board.do?method=insert
 	@RequestMapping(params = "method=insert")
 	public String boardInsert(Board insert, Model d) {

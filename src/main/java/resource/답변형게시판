@@ -50,11 +50,12 @@
 	6) 계층형 리스트 처리하기.
 		- 계층형 sql 작성
 		- 조회 vo 할당(BoardSch 추가)
-			전체글수
-			페이지당 보일 데이터 건수
-			페이지수
-			시작번호
-			마지막번호
+			전체글수[DB]
+			페이지당 보일 데이터 건수[화면-요청]
+			페이지수[service단 로직]
+			현재페이지[화면-요청]
+			시작번호[service단 로직]
+			마지막번호[service단 로직]
 		- service단에서 business로직 처리.
 		
 		- 계층적 리스트 및 페이징 처리..
@@ -71,7 +72,7 @@
 		board_seq (sequence만들기)
 	2) vo작성
 		리스트/입력 처리 vo(board.z01_vo.Board)
-		조회처리 및 페이지처리 관련 vo
+		조회처리 및 페이지처리 관련 vo(board.z01_vo.BoardSch)
 		첨부파일 vo(board.z01_vo.BoardFile)
 		
 # 기본 조회 리스트 작성하기
@@ -109,16 +110,22 @@
 	9) 화면 등록 완료 처리 메시지 출력..
 	
 # 파일업로드 처리.
+1. container(dispatch-servlet.xml)에 파일 업로드
+	view bean추가 처리.
+	org.springframework.web.multipart.commons.CommonsMul
 1. 다중파일 업로드를 위한 화면 UI 구성(view)
 	<input type="file" name="report"/>
 2. form 객체의 속성 추가 처리
 	<form enctype="multipart/form-data"
+		method="post"
 3. container에 파일업로드 view bean추가 처리.
 	org.springframework.web.multipart.commons.CommonsMulipartResolver
 4. VO에 report라는 프로퍼티로 네트워크상(client ==> server) 전송 가능하게
 	해주는 MultipartFile 객체를 속성 선언.
 	private MultipartFile[] report;
+	@RequestParam("report") MultipartFile report,
 5. controller에서 파일이 전송되었는지 확인.
+	report.getOriginalFilename();
 6. service단에서 받은 MultipartFile을 File객체로 변환해서
 	1) 특정 위치에 저장 처리.
 		eclipse tomcat웹 서비스 사용하기 때문
@@ -133,6 +140,21 @@
 			transferTo()메서드 사용.
 		- 임시파일 ==> 업로드할 위치로 복사.
 			파일카피 정책으로는 기존파일이 있으면 덮어쓰기 처리..
+		ex) 현업 처리 프로세스
+		1. WAS 서버 따로 구축
+		2. file 서버 따로 구축
+		임시폴드가 필요 없음, 바로 파일 서버로 저장.
+		동일명의 파일에 대한 처리.
+			ex) 게시판 no 1번에 첨부파일 a.txt을 저장,
+				no 2번에 다른 내용의 첨부파일 a.txt를 저장.
+				파일 첨부시 저장되는 파일명 컬럼지정 중복되지 않게
+				hash코드 + sequence abse10001(파일서버에저장할 파일명-중복불가)
+				실제파일명 따로 컬럼을 지정해서 저장.
+				번호 저장명		파일명
+				1	abse10001	a.txt
+				2	abse10002	a.txt
+				다운로드시, DB에 저장된 파일명으로 전환하여 다운로드 할 수 있게
+				처리한다.
 		
 	2) DB에 해당 파일 정보를 저장 처리.
 		(상세화면에서 다운로드 처리를 위해 파일 정보 저장)
@@ -289,7 +311,7 @@
 	1	0
 	2	0
 	refno가 0인 글은 최상위 글로 일반글을 의미하고
-	no refno
+	no	refno
 	3	1
 	4	3
 	이 경우, 3번 글은 상위글이 1의 글이고, 다시말하면 1번 글에 대한 답글을 의미한다.
@@ -443,4 +465,41 @@
 		select name="pageSize"
 		반복문을 이용해서 총페이지 수만큼 처리
 		페이지를 클릭시, hidden name="curPage"에 해당값 설정.
-		요청값 전달..		
+		요청값 전달..
+
+7. 블럭페이지 처리
+	1) 페이지수가 커질 때, 한정된 페이지(5,7,9) 번호를 보이고,
+		해당 범위 이상으로 가면 <<(이전), >>(이후)로 block단위로
+		페이지를 보이게 하여, 효과적으로 페이징 처리를 하는 것을 말한다.
+	2) 핵심 로직
+				1	2	3	4	5	[이후] ==> blocknum 1
+		[이전]	6	7	8	9	10	[이후] ==> blocknum 2
+		[이전]	11	12	13				  ==> blocknum 3
+			이전/이후를 클릭시, 블럭단위로 이동 처리하여 페이지번호를 하단에
+			리스트 처리한다.
+	3) 주요속성
+		blocksize : 블럭단위로 보일 페이지의 크기
+		blocknum : 블럭단위에 할당할 블럭번호
+			(blocksize와 curpage를 이용해서 처리)
+			curpage/blocksize
+			1/5, 2/5, 3/5, 4/5, 5/5 ==> 1
+			6/5, 7/5, 8/5, 9/5, 10/5 ==> 2
+						 
+			ex) 1번 블럭에는 1페이지 ~ 5페이지까지 출력
+				2번 블럭에는 6페이지 ~ 10페이지까지 출력
+				3번 블럭에는 11페이지 ~ 페이지의 마지막 번호(pageCount)
+		endBlock 블럭마다 마지막 페이지번호
+			blocknum * blocksize
+			마지막 블럭의 페이지번호는 pageCount까지이다.
+		startBlock 블럭마다 시작 페이지번호
+			(blocknum-1) * blicksize + 1
+			
+	4) 개발 순서
+		- VO 속성값 지정.
+		- service단에서 위의 로직 처리..
+		- 화면단 구현..
+			<c:forEach begin="${boardsch.startBlock}
+				end="${boardsch.endBlock}/>
+			이전/이후를 클릭시, 전송할 현재페이지.-1, curpage설정..
+			
+			

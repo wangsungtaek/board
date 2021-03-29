@@ -50,6 +50,20 @@ public class A01_BoardService {
 		sch.setEnd(sch.getCurPage()*sch.getPageSize());
 		sch.setStart((sch.getCurPage()-1)*sch.getPageSize()+1);
 		
+		// # 블럭 처리..
+		// 1. 초기 block의 크기 지정 : 5
+		sch.setBlocksize(5);
+		// 2. blocknum : 현재페이지/블럭의 크기 를 올림 처리
+		int blocknum = (int)Math.ceil(
+							sch.getCurPage()/(double)sch.getBlocksize());
+		// 3. endblock
+		int endBlock = blocknum * sch.getBlocksize();
+		sch.setEndBlock(endBlock>sch.getPageCount()?
+					sch.getPageCount():endBlock);
+		
+		// 4. startblock
+		sch.setStartBlock((blocknum-1)*sch.getBlocksize()+1);
+		
 		return dao.boardList(sch);
 	}
 	
@@ -127,80 +141,91 @@ public class A01_BoardService {
 		return board;
 	}
 	
+	// 게시판 수정
 	public void updateBoard(Board upt) {
-	      if(upt.getSubject() == null) upt.setSubject("");
-	      if(upt.getContent() == null) upt.setContent("");
-	      
-	      System.out.println("기존파일 갯수: " + upt.getFnames().length);
-	      System.out.println("수정할 파일 갯수: " + upt.getReport().length);
-	      
+//	      if(upt.getSubject() == null) upt.setSubject("");
+//	      if(upt.getContent() == null) upt.setContent("");
 	      int no = upt.getNo();
+	      /*
+	      # 파일 수정시, 처리할 내용.
+	      1. 수정할 파일 upload(물리적)
+	      2. 기존 파일을 수정할 파일명으로 변경(DB 처리)
 	      
-	      // 첨부 파일 물리적 위치 지정
-	      String fname = null;   // 수정할 파일명
-	      String orgFname = null;   // 기존 파일명
-	      File tmpFile = null;
-	      File orgFile = null;
-	      // 변경할 파일
-	      MultipartFile mpf = null;
-	      // 임시 파일 삭제 처리
-	      File pathFile = new File(uploadTmp);   // 폴더 객체생성
-	      for(File f : pathFile.listFiles()) {
-	         System.out.println("삭제할 파일: " + f.getName());
-	         f.delete();
-	      }
-	      
-	      for(int idx=0;idx<upt.getReport().length;idx++) {
-	         mpf = upt.getReport()[idx];
-	         fname = mpf.getOriginalFilename();
-	         
-	         // 기존 파일명
-	         orgFname = upt.getFnames()[idx];
-	         if(fname != null && !fname.trim().equals("")) {
-	            // 해당 폴더에 기존 파일은 일단 삭제(임시 폴더)
-	            tmpFile = new File(uploadTmp+orgFname);
-	            if(tmpFile.exists()) {
-	               tmpFile.delete();
-	            }
-	            // 해당 폴더에 기존 파일은 일단 삭제(대상 폴더)
-	            orgFile = new File(upload+orgFname);
-	            if(orgFile.exists()) {
-	               orgFile.delete();
-	            }
-	            
-	            tmpFile = new File(uploadTmp+fname);
-	            orgFile = new File(upload+fname);
-	            
-	            try {
-	               // MultipartFile을 임시파일객체로 변환 처리
-	               mpf.transferTo(tmpFile);
-	               
-	               Files.copy(tmpFile.toPath(), orgFile.toPath(),
-	                     StandardCopyOption.REPLACE_EXISTING);
-	               
-	            } catch (IllegalStateException e) {
-	               // TODO Auto-generated catch block
-	               e.printStackTrace();
-	               System.out.println("# 상태 에러: " + e.getMessage());
-	            } catch (IOException e) {
-	               // TODO Auto-generated catch block
-	               e.printStackTrace();
-	               System.out.println("# 파일 에러: " + e.getMessage());
-	            } catch (Exception e) {
-	               System.out.println("# 기타 에러: " + e.getMessage());
-	            }
-	            // 변경된 파일 정보를 수정 처리.
-	            HashMap<String, String> hs = new HashMap<String, String>();
-	            hs.put("no", ""+no);
-	            hs.put("fname", fname);
-	            hs.put("orgFname", upt.getFnames()[idx]);
-	            // dao단 호출 처리
-	            dao.updateFile(hs);
+	       */
+	      // 수정시, 등록한 파일이 없을 때,
+	      if(upt.getFnames()!=null &&
+	    		  upt.getFnames().length>0) {
+		      // 첨부 파일 물리적 위치 지정
+		      String fname = null;   // 수정할 파일명
+		      String orgFname = null;	// 기존 파일명
+		      File tmpFile = null;	// 임시 폴드
+		      File orgFile = null;	// 실제 업로드 폴드
+		      // 변경할 파일
+		      MultipartFile mpf = null;
+		      // 임시 파일 삭제 처리
+		      File pathFile = new File(uploadTmp);   // 폴더 객체생성
+		      for(File f : pathFile.listFiles()) {
+		         System.out.println("삭제할 파일: " + f.getName());
+		         f.delete();
+		      }
+		      
+		      // 수정할 파일과 업로드로 대체할 파일은 index가 같다.
+		      for(int idx=0;idx<upt.getReport().length;idx++) {
+		         mpf = upt.getReport()[idx]; // 대체할 파일 가져오기
+		         fname = mpf.getOriginalFilename(); // 대체할 파일명 가져오기
+		         
+		         // 기존 파일명
+		         orgFname = upt.getFnames()[idx]; // 수정할 기존 파일명
+		         // 변경할 파일 선택해서 추가할 때만 처리할 수 있도록 조건
+		         if(fname != null && !fname.trim().equals("")) {
+		            // 해당 폴더에 기존 파일은 일단 삭제(임시 폴더)
+		            tmpFile = new File(uploadTmp+orgFname);
+		            if(tmpFile.exists()) {
+		               tmpFile.delete();
+		            }
+		            // 해당 폴더에 기존 파일은 일단 삭제(대상 폴더)
+		            orgFile = new File(upload+orgFname);
+		            if(orgFile.exists()) {
+		               orgFile.delete();
+		            }
+		            // 선택한 파일을 임시폴드 위치/업로드할 위치로 파일객체 생성.
+		            tmpFile = new File(uploadTmp+fname);
+		            orgFile = new File(upload+fname);
+		            
+		            try {
+		               // MultipartFile을 임시파일객체로 변환 처리
+		               mpf.transferTo(tmpFile);
+		               
+		               Files.copy(tmpFile.toPath(), orgFile.toPath(),
+		                     StandardCopyOption.REPLACE_EXISTING);
+		               
+		            } catch (IllegalStateException e) {
+		               // TODO Auto-generated catch block
+		               e.printStackTrace();
+		               System.out.println("# 상태 에러: " + e.getMessage());
+		            } catch (IOException e) {
+		               // TODO Auto-generated catch block
+		               e.printStackTrace();
+		               System.out.println("# 파일 에러: " + e.getMessage());
+		            } catch (Exception e) {
+		               System.out.println("# 기타 에러: " + e.getMessage());
+		            }
+		            // 변경된 파일 정보를 수정 처리.
+		            HashMap<String, String> hs = new HashMap<String, String>();
+		            hs.put("no", ""+no);
+		            hs.put("fname", fname);
+		            hs.put("orgFname", upt.getFnames()[idx]);
+		            // dao단 호출 처리
+		            dao.updateFile(hs);
+	         	}
 	         }
 	      }
 	      // 메일 게시판 수정 정보.
 	      dao.updateBoard(upt);     
-	   }
+	   
+	}
+	
+	// 게시판 삭제
 	public void deleteBoard(int no) {
 		dao.deleteFile(no);
 		dao.deleteBoard(no);

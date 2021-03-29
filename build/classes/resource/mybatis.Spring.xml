@@ -12,5 +12,5 @@
 	<mappers>
 		<mapper resource="resource/BoardMapper.xml" />
 	</mappers>
-	
+
 </configuration>

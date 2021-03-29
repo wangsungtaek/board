@@ -8,14 +8,16 @@
 		SELECT count(*)
 		FROM board
 		WHERE subject like '%'||#{subject}||'%'
-		AND writer like '%'||#{writer}||'%'		
+		AND writer like '%'||#{writer}||'%'	
+		START WITH refno = 0
+		CONNECT BY PRIOR NO = refno	
 	</select>
 	
 	<resultMap type="board" id="boardMap"/>
 	<select id="boardList" resultMap="boardMap" parameterType="boardsch">
 		SELECT *
 		FROM(
-			SELECT rownum rn, level, a. *
+			SELECT rownum cnt, level, a. *
 			FROM board a
 			WHERE subject like '%'||#{subject}||'%'
 			AND writer like '%'||#{writer}||'%'
@@ -23,7 +25,7 @@
 			CONNECT BY PRIOR NO = refno
 			ORDER siblings by no desc
 		)
-		WHERE rn BETWEEN #{start} AND #{end}
+		WHERE cnt BETWEEN #{start} AND #{end}
 	</select>
 	
 	<insert id="insertBoard" parameterType="board">
@@ -70,11 +72,19 @@
     </update>
 	
 	<delete id="deleteBoard" parameterType="int">
-		DELETE FROM board where no=#{no}
+		DELETE FROM board 
+		WHERE NO in (
+			SELECT no
+			FROM board a
+			START WITH no = #{no}
+			CONNECT BY PRIOR NO = refno
+		)
+		
 	</delete>
 	
 	<delete id="deleteFile" parameterType="int">
-		DELETE FROM boardfile where no=#{no}
+		DELETE FROM boardfile
+		WHERE no=#{no}
 	</delete>
 	
 </mapper>

@@ -6,6 +6,7 @@ import java.util.Date;
 import org.springframework.web.multipart.MultipartFile;
 
 public class Board {
+	private int cnt;
 	private int level;
 	private int no;
 	private int refno;
@@ -15,8 +16,8 @@ public class Board {
 	private int readcnt;
 	private Date regdte;
 	private Date uptdte;
-	private MultipartFile[] report; // 업로드시 필요
-	private String[] fnames; // 파일 수정시 사용.
+	private MultipartFile[] report; // 업로드시 필요(파일 수정시 업로드)
+	private String[] fnames; // 파일 수정시 사용. report, fnames 인덱스가 동일
 	private ArrayList<BoardFile> fileInfo;// 다운로드시 필요
 	
 	public Board() {
@@ -123,6 +124,14 @@ public class Board {
 
 	public void setLevel(int level) {
 		this.level = level;
+	}
+
+	public int getCnt() {
+		return cnt;
+	}
+
+	public void setCnt(int cnt) {
+		this.cnt = cnt;
 	}
 	
 }
